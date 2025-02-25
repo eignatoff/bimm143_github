@@ -1,0 +1,224 @@
+---
+title: "AlphaFold Analysis"
+author: "Emily Ignatoff (A16732102)"
+format: pdf
+---
+
+## AlphaFold Analysis of find-a-gene sequence:
+
+Here we analyze our AlphaFold structure prediction models for our HIV sequence:
+
+
+
+```{r}
+results_dir <- "hivpr_monomer_94b5b/"
+
+```
+
+
+First, I will read in each generated pdb file from the results directory:
+
+```{r}
+pdb_files <- list.files(path=results_dir,
+                        pattern="*.pdb",
+                        full.names = TRUE)
+
+basename(pdb_files)
+```
+
+Now, I will superimpose each pdb on top of the others:
+
+```{r}
+library(bio3d)
+
+pdbs <- pdbaln(pdb_files, fit=TRUE, exefile="msa")
+```
+
+
+```{r}
+pdbs
+```
+
+Now, I will generate the structural difference between these coordinate sets using `rmsd()`:
+
+```{r}
+rd <- rmsd(pdbs, fit=T)
+range(rd)
+```
+
+Heatmap of RMSD values:
+
+```{r}
+library(pheatmap)
+
+colnames(rd) <- paste0("m",1:5)
+rownames(rd) <- paste0("m",1:5)
+pheatmap(rd)
+```
+
+I will be using a human HSP70 protein from the PDB database as my reference protein for the following steps:
+
+```{r}
+pdb <- read.pdb("1hsg")
+```
+
+Now, I will plot the pLDDT values of each model against each other:
+
+```{r}
+plotb3(pdbs$b[1,], typ="l", lwd=2, sse=pdb)
+points(pdbs$b[2,], typ="l", col="red")
+points(pdbs$b[3,], typ="l", col="blue")
+points(pdbs$b[4,], typ="l", col="darkgreen")
+points(pdbs$b[5,], typ="l", col="orange")
+abline(v=100, col="gray")
+```
+
+I will now find the the most "rigid" or consistent portion across models using the `core.find()` function:
+
+```{r}
+core <- core.find(pdbs)
+core.inds <- print(core, vol=0.5)
+```
+
+Writing the superimposed coordinates to a new file for use in Mol*
+
+```{r}
+xyz <- pdbfit(pdbs, core.inds, outpath="corefit_structures")
+```
+
+
+![Uncertainty/disorder of strucutres in Mol*](hiv_uncertainty.png)
+
+
+I will now use RMSF to observe the conformational variance across the structure:
+
+```{r}
+rf <- rmsf(xyz)
+
+plotb3(rf, sse=pdb)
+abline(v=100, col="gray", ylab="RMSF")
+```
+
+>Note: I am unsure why the sse function is not working using an existing PDB file as my reference protein :(
+
+## Predicted Alignment Error for Domains
+
+```{r}
+library(jsonlite)
+
+pae_files <- list.files(path=results_dir,
+                        pattern=".*model.*\\.json",
+                        full.names = TRUE)
+```
+
+```{r}
+pae1 <- read_json(pae_files[1],simplifyVector = TRUE)
+pae2 <- read_json(pae_files[2],simplifyVector = TRUE)
+pae3 <- read_json(pae_files[3],simplifyVector = TRUE)
+pae4 <- read_json(pae_files[4],simplifyVector = TRUE)
+pae5 <- read_json(pae_files[5],simplifyVector = TRUE)
+
+attributes(pae1)
+head(pae1$plddt)
+```
+
+>Which model has the best (lowest) max PAE?
+
+```{r}
+pae1$max_pae
+pae2$max_pae
+pae3$max_pae
+pae4$max_pae
+pae5$max_pae
+```
+PAE 2 is lowest in this case!
+
+I will plot each of these PAE in the same range:
+
+```{r}
+plot.dmat(pae1$pae, 
+          xlab="Residue Position (i)",
+          ylab="Residue Position (j)",
+           grid.col = "black",
+          zlim= c(0,20))
+```
+
+```{r}
+plot.dmat(pae2$pae, 
+          xlab="Residue Position (i)",
+          ylab="Residue Position (j)",
+          grid.col = "black",
+          zlim= c(0,20))
+```
+
+```{r}
+plot.dmat(pae3$pae, 
+          xlab="Residue Position (i)",
+          ylab="Residue Position (j)",
+          grid.col = "black")
+```
+
+```{r}
+plot.dmat(pae4$pae, 
+          xlab="Residue Position (i)",
+          ylab="Residue Position (j)",
+          grid.col = "black")
+```
+
+```{r}
+plot.dmat(pae5$pae, 
+          xlab="Residue Position (i)",
+          ylab="Residue Position (j)",
+          grid.col = "black")
+```
+
+## Residue Conservation from Alignment File
+
+Generate alignment file:
+
+```{r}
+aln_file <- list.files(path=results_dir,
+                       pattern=".a3m$",
+                        full.names = TRUE)
+aln_file
+```
+
+```{r}
+aln <- read.fasta(aln_file[1], to.upper = TRUE)
+```
+
+> How many sequences in this alignment?
+
+```{r}
+dim(aln$ali)
+```
+
+I will score residue conservation using the `conserv()` function:
+
+```{r}
+sim <- conserv(aln)
+```
+
+```{r}
+plotb3(sim[1:99], sse=trim.pdb(pdb, chain="A"),
+       ylab="Conservation Score")
+```
+
+Let's look at the sequences which will stand out in a consensus sequence
+
+```{r}
+con <- consensus(aln, cutoff = 0.9)
+con$seq
+```
+
+
+
+```{r}
+m1.pdb <- read.pdb(pdb_files[1])
+occ <- vec2resno(sim[1:length(unique(m1.pdb$atom$resno))], m1.pdb$atom$resno)
+write.pdb(m1.pdb, o=occ, file="m1_conserv.pdb")
+```
+
+
+
+![Color by Occupancy in Mol*](hiv_conserve.png)
