@@ -210,8 +210,9 @@ plotb3(sim[1:99], sse=trim.pdb(pdb, chain="A"),
 Let's look at the sequences which will stand out in a consensus sequence
 
 ```{r}
-con <- consensus(aln, cutoff = 0.7)
-con$seq
+#Commenting out to speed up html generation
+#con <- consensus(aln, cutoff = 0.7)
+#con$seq
 ```
 
 

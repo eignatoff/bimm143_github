@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Emily Ignatoff (A16732102)">
+
+<title>AlphaFold Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="class11_HW_files/libs/clipboard/clipboard.min.js"></script>
+<script src="class11_HW_files/libs/quarto-html/quarto.js"></script>
+<script src="class11_HW_files/libs/quarto-html/popper.min.js"></script>
+<script src="class11_HW_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="class11_HW_files/libs/quarto-html/anchor.min.js"></script>
+<link href="class11_HW_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="class11_HW_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="class11_HW_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="class11_HW_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="class11_HW_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="class11_HW.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">AlphaFold Analysis</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Emily Ignatoff (A16732102) </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="alphafold-analysis-of-find-a-gene-sequence" class="level2">
+<h2 class="anchored" data-anchor-id="alphafold-analysis-of-find-a-gene-sequence">AlphaFold Analysis of find-a-gene sequence:</h2>
+<p>Here we analyze our AlphaFold structure prediction models for our find-a-gene sequence:</p>
+<p><strong>Note:</strong> To my understanding, AlphaFold only uses one reading frame for estimating protein structure. I therefore looked for which of my reading frames had the start codon (M) since reading frame 1 did not. (I used reading frame 2)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>results_dir <span class="ot">&lt;-</span> <span class="st">"hsp70_sardinops_b602d/"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>First, I will read in each generated pdb file from the results directory:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>pdb_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">path=</span>results_dir,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">pattern=</span><span class="st">"*.pdb"</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">basename</span>(pdb_files)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "hsp70_sardinops_b602d_unrelaxed_rank_001_alphafold2_ptm_model_4_seed_000.pdb"
+[2] "hsp70_sardinops_b602d_unrelaxed_rank_002_alphafold2_ptm_model_2_seed_000.pdb"
+[3] "hsp70_sardinops_b602d_unrelaxed_rank_003_alphafold2_ptm_model_1_seed_000.pdb"
+[4] "hsp70_sardinops_b602d_unrelaxed_rank_004_alphafold2_ptm_model_3_seed_000.pdb"
+[5] "hsp70_sardinops_b602d_unrelaxed_rank_005_alphafold2_ptm_model_5_seed_000.pdb"</code></pre>
+</div>
+</div>
+<p>Now, I will superimpose each pdb on top of the others:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bio3d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'bio3d' was built under R version 4.3.3</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>pdbs <span class="ot">&lt;-</span> <span class="fu">pdbaln</span>(pdb_files, <span class="at">fit=</span><span class="cn">TRUE</span>, <span class="at">exefile=</span><span class="st">"msa"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading PDB files:
+hsp70_sardinops_b602d/hsp70_sardinops_b602d_unrelaxed_rank_001_alphafold2_ptm_model_4_seed_000.pdb
+hsp70_sardinops_b602d/hsp70_sardinops_b602d_unrelaxed_rank_002_alphafold2_ptm_model_2_seed_000.pdb
+hsp70_sardinops_b602d/hsp70_sardinops_b602d_unrelaxed_rank_003_alphafold2_ptm_model_1_seed_000.pdb
+hsp70_sardinops_b602d/hsp70_sardinops_b602d_unrelaxed_rank_004_alphafold2_ptm_model_3_seed_000.pdb
+hsp70_sardinops_b602d/hsp70_sardinops_b602d_unrelaxed_rank_005_alphafold2_ptm_model_5_seed_000.pdb
+.....
+
+Extracting sequences
+
+pdb/seq: 1   name: hsp70_sardinops_b602d/hsp70_sardinops_b602d_unrelaxed_rank_001_alphafold2_ptm_model_4_seed_000.pdb 
+pdb/seq: 2   name: hsp70_sardinops_b602d/hsp70_sardinops_b602d_unrelaxed_rank_002_alphafold2_ptm_model_2_seed_000.pdb 
+pdb/seq: 3   name: hsp70_sardinops_b602d/hsp70_sardinops_b602d_unrelaxed_rank_003_alphafold2_ptm_model_1_seed_000.pdb 
+pdb/seq: 4   name: hsp70_sardinops_b602d/hsp70_sardinops_b602d_unrelaxed_rank_004_alphafold2_ptm_model_3_seed_000.pdb 
+pdb/seq: 5   name: hsp70_sardinops_b602d/hsp70_sardinops_b602d_unrelaxed_rank_005_alphafold2_ptm_model_5_seed_000.pdb </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>pdbs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                               1        .         .         .         .         50 
+[Truncated_Name:1]hsp70_sard   TPQTQSFDAKRLIGRKFDDGVVQSDMKHWPFTVIDDSTRPKVQVDYKGET
+[Truncated_Name:2]hsp70_sard   TPQTQSFDAKRLIGRKFDDGVVQSDMKHWPFTVIDDSTRPKVQVDYKGET
+[Truncated_Name:3]hsp70_sard   TPQTQSFDAKRLIGRKFDDGVVQSDMKHWPFTVIDDSTRPKVQVDYKGET
+[Truncated_Name:4]hsp70_sard   TPQTQSFDAKRLIGRKFDDGVVQSDMKHWPFTVIDDSTRPKVQVDYKGET
+[Truncated_Name:5]hsp70_sard   TPQTQSFDAKRLIGRKFDDGVVQSDMKHWPFTVIDDSTRPKVQVDYKGET
+                               ************************************************** 
+                               1        .         .         .         .         50 
+
+                              51        .         .         .         .         100 
+[Truncated_Name:1]hsp70_sard   KSFYPEEISSMVLVKMKEIAEAYLGKTVSNAVVTVPAYFNDSQRQATKDA
+[Truncated_Name:2]hsp70_sard   KSFYPEEISSMVLVKMKEIAEAYLGKTVSNAVVTVPAYFNDSQRQATKDA
+[Truncated_Name:3]hsp70_sard   KSFYPEEISSMVLVKMKEIAEAYLGKTVSNAVVTVPAYFNDSQRQATKDA
+[Truncated_Name:4]hsp70_sard   KSFYPEEISSMVLVKMKEIAEAYLGKTVSNAVVTVPAYFNDSQRQATKDA
+[Truncated_Name:5]hsp70_sard   KSFYPEEISSMVLVKMKEIAEAYLGKTVSNAVVTVPAYFNDSQRQATKDA
+                               ************************************************** 
+                              51        .         .         .         .         100 
+
+                             101        .         .         .         .         150 
+[Truncated_Name:1]hsp70_sard   GTISGLNVLRIINEPTAAAIAYGLDKKVGAERNVLIFDLGGGTFDVSILT
+[Truncated_Name:2]hsp70_sard   GTISGLNVLRIINEPTAAAIAYGLDKKVGAERNVLIFDLGGGTFDVSILT
+[Truncated_Name:3]hsp70_sard   GTISGLNVLRIINEPTAAAIAYGLDKKVGAERNVLIFDLGGGTFDVSILT
+[Truncated_Name:4]hsp70_sard   GTISGLNVLRIINEPTAAAIAYGLDKKVGAERNVLIFDLGGGTFDVSILT
+[Truncated_Name:5]hsp70_sard   GTISGLNVLRIINEPTAAAIAYGLDKKVGAERNVLIFDLGGGTFDVSILT
+                               ************************************************** 
+                             101        .         .         .         .         150 
+
+                             151        .         .         .         .         200 
+[Truncated_Name:1]hsp70_sard   IEDGIFEVKSTAGDTHLGGEDFDNRMVNHFIAEFKRKFKKDISDNKRAVR
+[Truncated_Name:2]hsp70_sard   IEDGIFEVKSTAGDTHLGGEDFDNRMVNHFIAEFKRKFKKDISDNKRAVR
+[Truncated_Name:3]hsp70_sard   IEDGIFEVKSTAGDTHLGGEDFDNRMVNHFIAEFKRKFKKDISDNKRAVR
+[Truncated_Name:4]hsp70_sard   IEDGIFEVKSTAGDTHLGGEDFDNRMVNHFIAEFKRKFKKDISDNKRAVR
+[Truncated_Name:5]hsp70_sard   IEDGIFEVKSTAGDTHLGGEDFDNRMVNHFIAEFKRKFKKDISDNKRAVR
+                               ************************************************** 
+                             151        .         .         .         .         200 
+
+                             201        .         .         .         .         250 
+[Truncated_Name:1]hsp70_sard   RLRTACERAKRTLSSSTQASIEIDSLYEGVDFYTSITRARFEELNADLFR
+[Truncated_Name:2]hsp70_sard   RLRTACERAKRTLSSSTQASIEIDSLYEGVDFYTSITRARFEELNADLFR
+[Truncated_Name:3]hsp70_sard   RLRTACERAKRTLSSSTQASIEIDSLYEGVDFYTSITRARFEELNADLFR
+[Truncated_Name:4]hsp70_sard   RLRTACERAKRTLSSSTQASIEIDSLYEGVDFYTSITRARFEELNADLFR
+[Truncated_Name:5]hsp70_sard   RLRTACERAKRTLSSSTQASIEIDSLYEGVDFYTSITRARFEELNADLFR
+                               ************************************************** 
+                             201        .         .         .         .         250 
+
+                             251        .         .         .         .         300 
+[Truncated_Name:1]hsp70_sard   GTLDPVEKSLRDAKMDKSAVHDIVLVGGSTRIPKIQKLLQDFFNGKELNK
+[Truncated_Name:2]hsp70_sard   GTLDPVEKSLRDAKMDKSAVHDIVLVGGSTRIPKIQKLLQDFFNGKELNK
+[Truncated_Name:3]hsp70_sard   GTLDPVEKSLRDAKMDKSAVHDIVLVGGSTRIPKIQKLLQDFFNGKELNK
+[Truncated_Name:4]hsp70_sard   GTLDPVEKSLRDAKMDKSAVHDIVLVGGSTRIPKIQKLLQDFFNGKELNK
+[Truncated_Name:5]hsp70_sard   GTLDPVEKSLRDAKMDKSAVHDIVLVGGSTRIPKIQKLLQDFFNGKELNK
+                               ************************************************** 
+                             251        .         .         .         .         300 
+
+                             301        .         .         .         .         350 
+[Truncated_Name:1]hsp70_sard   SINPDEAVAYGAAVQAAILSGDKSENVQDLLLLDVTPLSLGIETAGGVMT
+[Truncated_Name:2]hsp70_sard   SINPDEAVAYGAAVQAAILSGDKSENVQDLLLLDVTPLSLGIETAGGVMT
+[Truncated_Name:3]hsp70_sard   SINPDEAVAYGAAVQAAILSGDKSENVQDLLLLDVTPLSLGIETAGGVMT
+[Truncated_Name:4]hsp70_sard   SINPDEAVAYGAAVQAAILSGDKSENVQDLLLLDVTPLSLGIETAGGVMT
+[Truncated_Name:5]hsp70_sard   SINPDEAVAYGAAVQAAILSGDKSENVQDLLLLDVTPLSLGIETAGGVMT
+                               ************************************************** 
+                             301        .         .         .         .         350 
+
+                             351        .         .         .         .         400 
+[Truncated_Name:1]hsp70_sard   VLIKRNTTIPTKQTQTFTTYSDNQPGVLIQVYEGERAMTKDNNLLGKFEL
+[Truncated_Name:2]hsp70_sard   VLIKRNTTIPTKQTQTFTTYSDNQPGVLIQVYEGERAMTKDNNLLGKFEL
+[Truncated_Name:3]hsp70_sard   VLIKRNTTIPTKQTQTFTTYSDNQPGVLIQVYEGERAMTKDNNLLGKFEL
+[Truncated_Name:4]hsp70_sard   VLIKRNTTIPTKQTQTFTTYSDNQPGVLIQVYEGERAMTKDNNLLGKFEL
+[Truncated_Name:5]hsp70_sard   VLIKRNTTIPTKQTQTFTTYSDNQPGVLIQVYEGERAMTKDNNLLGKFEL
+                               ************************************************** 
+                             351        .         .         .         .         400 
+
+                             401        .         .         .         .         450 
+[Truncated_Name:1]hsp70_sard   TGIPPAPRGVPQIEVTFDIDANGILNVSAVDKSTGKENKITITNDKGRLS
+[Truncated_Name:2]hsp70_sard   TGIPPAPRGVPQIEVTFDIDANGILNVSAVDKSTGKENKITITNDKGRLS
+[Truncated_Name:3]hsp70_sard   TGIPPAPRGVPQIEVTFDIDANGILNVSAVDKSTGKENKITITNDKGRLS
+[Truncated_Name:4]hsp70_sard   TGIPPAPRGVPQIEVTFDIDANGILNVSAVDKSTGKENKITITNDKGRLS
+[Truncated_Name:5]hsp70_sard   TGIPPAPRGVPQIEVTFDIDANGILNVSAVDKSTGKENKITITNDKGRLS
+                               ************************************************** 
+                             401        .         .         .         .         450 
+
+                             451        .         .         .         .         500 
+[Truncated_Name:1]hsp70_sard   KEDIERMVQEAEQYKAEDDVQRDKVSSKNALESYSFSMKATVEDEKLQGK
+[Truncated_Name:2]hsp70_sard   KEDIERMVQEAEQYKAEDDVQRDKVSSKNALESYSFSMKATVEDEKLQGK
+[Truncated_Name:3]hsp70_sard   KEDIERMVQEAEQYKAEDDVQRDKVSSKNALESYSFSMKATVEDEKLQGK
+[Truncated_Name:4]hsp70_sard   KEDIERMVQEAEQYKAEDDVQRDKVSSKNALESYSFSMKATVEDEKLQGK
+[Truncated_Name:5]hsp70_sard   KEDIERMVQEAEQYKAEDDVQRDKVSSKNALESYSFSMKATVEDEKLQGK
+                               ************************************************** 
+                             451        .         .         .         .         500 
+
+                             501        .         .         .         .        549 
+[Truncated_Name:1]hsp70_sard   ISDEDKAKILEKCNEVISWLDKNQTAEKEEYEHQQKELEKLCNPIITKL
+[Truncated_Name:2]hsp70_sard   ISDEDKAKILEKCNEVISWLDKNQTAEKEEYEHQQKELEKLCNPIITKL
+[Truncated_Name:3]hsp70_sard   ISDEDKAKILEKCNEVISWLDKNQTAEKEEYEHQQKELEKLCNPIITKL
+[Truncated_Name:4]hsp70_sard   ISDEDKAKILEKCNEVISWLDKNQTAEKEEYEHQQKELEKLCNPIITKL
+[Truncated_Name:5]hsp70_sard   ISDEDKAKILEKCNEVISWLDKNQTAEKEEYEHQQKELEKLCNPIITKL
+                               ************************************************* 
+                             501        .         .         .         .        549 
+
+Call:
+  pdbaln(files = pdb_files, fit = TRUE, exefile = "msa")
+
+Class:
+  pdbs, fasta
+
+Alignment dimensions:
+  5 sequence rows; 549 position columns (549 non-gap, 0 gap) 
+
++ attr: xyz, resno, b, chain, id, ali, resid, sse, call</code></pre>
+</div>
+</div>
+<p>Now, I will generate the structural difference between these coordinate sets using <code>rmsd()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>rd <span class="ot">&lt;-</span> <span class="fu">rmsd</span>(pdbs, <span class="at">fit=</span>T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in rmsd(pdbs, fit = T): No indices provided, using the 549 non NA positions</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(rd)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  0.000 33.897</code></pre>
+</div>
+</div>
+<p>Heatmap of RMSD values:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pheatmap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'pheatmap' was built under R version 4.3.3</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(rd) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"m"</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(rd) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"m"</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">pheatmap</span>(rd)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="class11_HW_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>I will be using a human HSP70 protein from the PDB database as my reference protein for the following steps:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>pdb <span class="ot">&lt;-</span> <span class="fu">read.pdb</span>(<span class="st">"4po2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Note: Accessing on-line PDB file
+   PDB has ALT records, taking A only, rm.alt=TRUE</code></pre>
+</div>
+</div>
+<p>Now, I will plot the pLDDT values of each model against each other:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plotb3</span>(pdbs<span class="sc">$</span>b[<span class="dv">1</span>,], <span class="at">typ=</span><span class="st">"l"</span>, <span class="at">lwd=</span><span class="dv">2</span>, <span class="at">sse=</span>pdb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in plotb3(pdbs$b[1, ], typ = "l", lwd = 2, sse = pdb): Length of input
+'sse' does not equal the length of input 'x'; Ignoring 'sse'</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(pdbs<span class="sc">$</span>b[<span class="dv">2</span>,], <span class="at">typ=</span><span class="st">"l"</span>, <span class="at">col=</span><span class="st">"red"</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(pdbs<span class="sc">$</span>b[<span class="dv">3</span>,], <span class="at">typ=</span><span class="st">"l"</span>, <span class="at">col=</span><span class="st">"blue"</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(pdbs<span class="sc">$</span>b[<span class="dv">4</span>,], <span class="at">typ=</span><span class="st">"l"</span>, <span class="at">col=</span><span class="st">"darkgreen"</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(pdbs<span class="sc">$</span>b[<span class="dv">5</span>,], <span class="at">typ=</span><span class="st">"l"</span>, <span class="at">col=</span><span class="st">"orange"</span>)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v=</span><span class="dv">100</span>, <span class="at">col=</span><span class="st">"gray"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="class11_HW_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>I will now find the the most “rigid” or consistent portion across models using the <code>core.find()</code> function:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>core <span class="ot">&lt;-</span> <span class="fu">core.find</span>(pdbs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> core size 548 of 549  vol = 7109.547 
+ core size 547 of 549  vol = 7088.297 
+ core size 546 of 549  vol = 7085.065 
+ core size 545 of 549  vol = 7120.348 
+ core size 544 of 549  vol = 7180.386 
+ core size 543 of 549  vol = 7236.389 
+ core size 542 of 549  vol = 7290.173 
+ core size 541 of 549  vol = 7347.306 
+ core size 540 of 549  vol = 7402.5 
+ core size 539 of 549  vol = 7476.46 
+ core size 538 of 549  vol = 7544.681 
+ core size 537 of 549  vol = 7566.823 
+ core size 536 of 549  vol = 7601.172 
+ core size 535 of 549  vol = 7617.761 
+ core size 534 of 549  vol = 7588.411 
+ core size 533 of 549  vol = 7557.263 
+ core size 532 of 549  vol = 7506.871 
+ core size 531 of 549  vol = 7443.589 
+ core size 530 of 549  vol = 7351.131 
+ core size 529 of 549  vol = 7274.492 
+ core size 528 of 549  vol = 7155.502 
+ core size 527 of 549  vol = 7024.994 
+ core size 526 of 549  vol = 6885.366 
+ core size 525 of 549  vol = 6752.533 
+ core size 524 of 549  vol = 6594.844 
+ core size 523 of 549  vol = 6436.804 
+ core size 522 of 549  vol = 6259.679 
+ core size 521 of 549  vol = 6093.047 
+ core size 520 of 549  vol = 5932.441 
+ core size 519 of 549  vol = 5768.099 
+ core size 518 of 549  vol = 5580.357 
+ core size 517 of 549  vol = 5399.174 
+ core size 516 of 549  vol = 5199.004 
+ core size 515 of 549  vol = 5030.25 
+ core size 514 of 549  vol = 4852.857 
+ core size 513 of 549  vol = 4697.384 
+ core size 512 of 549  vol = 4536.706 
+ core size 511 of 549  vol = 4363.227 
+ core size 510 of 549  vol = 4198.556 
+ core size 509 of 549  vol = 4031.465 
+ core size 508 of 549  vol = 3872.506 
+ core size 507 of 549  vol = 3716.383 
+ core size 506 of 549  vol = 3567.801 
+ core size 505 of 549  vol = 3403.628 
+ core size 504 of 549  vol = 3255.569 
+ core size 503 of 549  vol = 3119.522 
+ core size 502 of 549  vol = 2975.903 
+ core size 501 of 549  vol = 2844.798 
+ core size 500 of 549  vol = 2718.69 
+ core size 499 of 549  vol = 2594.277 
+ core size 498 of 549  vol = 2472.983 
+ core size 497 of 549  vol = 2355.744 
+ core size 496 of 549  vol = 2231.516 
+ core size 495 of 549  vol = 2124.295 
+ core size 494 of 549  vol = 2025.638 
+ core size 493 of 549  vol = 1918.124 
+ core size 492 of 549  vol = 1816.685 
+ core size 491 of 549  vol = 1715.384 
+ core size 490 of 549  vol = 1610.873 
+ core size 489 of 549  vol = 1514.188 
+ core size 488 of 549  vol = 1422.637 
+ core size 487 of 549  vol = 1327.722 
+ core size 486 of 549  vol = 1232.572 
+ core size 485 of 549  vol = 1149.631 
+ core size 484 of 549  vol = 1078.993 
+ core size 483 of 549  vol = 1002.957 
+ core size 482 of 549  vol = 933.057 
+ core size 481 of 549  vol = 865.281 
+ core size 480 of 549  vol = 796.623 
+ core size 479 of 549  vol = 727.854 
+ core size 478 of 549  vol = 662.113 
+ core size 477 of 549  vol = 599.622 
+ core size 476 of 549  vol = 543.322 
+ core size 475 of 549  vol = 501.317 
+ core size 474 of 549  vol = 459.711 
+ core size 473 of 549  vol = 421.175 
+ core size 472 of 549  vol = 388.641 
+ core size 471 of 549  vol = 357.07 
+ core size 470 of 549  vol = 326.254 
+ core size 469 of 549  vol = 304.955 
+ core size 468 of 549  vol = 282.522 
+ core size 467 of 549  vol = 259.896 
+ core size 466 of 549  vol = 239.949 
+ core size 465 of 549  vol = 218.181 
+ core size 464 of 549  vol = 199.36 
+ core size 463 of 549  vol = 183.502 
+ core size 462 of 549  vol = 169.928 
+ core size 461 of 549  vol = 155.682 
+ core size 460 of 549  vol = 143.38 
+ core size 459 of 549  vol = 128.872 
+ core size 458 of 549  vol = 114.483 
+ core size 457 of 549  vol = 100.528 
+ core size 456 of 549  vol = 87.377 
+ core size 455 of 549  vol = 75.125 
+ core size 454 of 549  vol = 64.363 
+ core size 453 of 549  vol = 53.88 
+ core size 452 of 549  vol = 48.94 
+ core size 451 of 549  vol = 44.077 
+ core size 450 of 549  vol = 37.183 
+ core size 449 of 549  vol = 32.138 
+ core size 448 of 549  vol = 28.935 
+ core size 447 of 549  vol = 25.528 
+ core size 446 of 549  vol = 21.466 
+ core size 445 of 549  vol = 17.982 
+ core size 444 of 549  vol = 16.124 
+ core size 443 of 549  vol = 14.606 
+ core size 442 of 549  vol = 13.269 
+ core size 441 of 549  vol = 12.847 
+ core size 440 of 549  vol = 12.494 
+ core size 439 of 549  vol = 12.221 
+ core size 438 of 549  vol = 11.941 
+ core size 437 of 549  vol = 11.69 
+ core size 436 of 549  vol = 11.461 
+ core size 435 of 549  vol = 11.244 
+ core size 434 of 549  vol = 11.04 
+ core size 433 of 549  vol = 10.836 
+ core size 432 of 549  vol = 10.612 
+ core size 431 of 549  vol = 10.437 
+ core size 430 of 549  vol = 10.277 
+ core size 429 of 549  vol = 10.098 
+ core size 428 of 549  vol = 9.937 
+ core size 427 of 549  vol = 9.779 
+ core size 426 of 549  vol = 9.634 
+ core size 425 of 549  vol = 9.469 
+ core size 424 of 549  vol = 9.304 
+ core size 423 of 549  vol = 9.194 
+ core size 422 of 549  vol = 9.031 
+ core size 421 of 549  vol = 8.873 
+ core size 420 of 549  vol = 8.744 
+ core size 419 of 549  vol = 8.621 
+ core size 418 of 549  vol = 8.445 
+ core size 417 of 549  vol = 8.302 
+ core size 416 of 549  vol = 8.133 
+ core size 415 of 549  vol = 7.996 
+ core size 414 of 549  vol = 7.871 
+ core size 413 of 549  vol = 7.697 
+ core size 412 of 549  vol = 7.557 
+ core size 411 of 549  vol = 7.412 
+ core size 410 of 549  vol = 7.282 
+ core size 409 of 549  vol = 7.16 
+ core size 408 of 549  vol = 7.069 
+ core size 407 of 549  vol = 6.948 
+ core size 406 of 549  vol = 6.849 
+ core size 405 of 549  vol = 6.761 
+ core size 404 of 549  vol = 6.678 
+ core size 403 of 549  vol = 6.578 
+ core size 402 of 549  vol = 6.465 
+ core size 401 of 549  vol = 6.363 
+ core size 400 of 549  vol = 6.29 
+ core size 399 of 549  vol = 6.201 
+ core size 398 of 549  vol = 6.06 
+ core size 397 of 549  vol = 5.948 
+ core size 396 of 549  vol = 5.832 
+ core size 395 of 549  vol = 5.711 
+ core size 394 of 549  vol = 5.592 
+ core size 393 of 549  vol = 5.479 
+ core size 392 of 549  vol = 5.379 
+ core size 391 of 549  vol = 5.278 
+ core size 390 of 549  vol = 5.16 
+ core size 389 of 549  vol = 5.025 
+ core size 388 of 549  vol = 4.874 
+ core size 387 of 549  vol = 4.78 
+ core size 386 of 549  vol = 4.683 
+ core size 385 of 549  vol = 4.592 
+ core size 384 of 549  vol = 4.473 
+ core size 383 of 549  vol = 4.38 
+ core size 382 of 549  vol = 4.29 
+ core size 381 of 549  vol = 4.156 
+ core size 380 of 549  vol = 4.04 
+ core size 379 of 549  vol = 3.916 
+ core size 378 of 549  vol = 3.819 
+ core size 377 of 549  vol = 3.725 
+ core size 376 of 549  vol = 3.623 
+ core size 375 of 549  vol = 3.531 
+ core size 374 of 549  vol = 3.447 
+ core size 373 of 549  vol = 3.359 
+ core size 372 of 549  vol = 3.295 
+ core size 371 of 549  vol = 3.209 
+ core size 370 of 549  vol = 3.138 
+ core size 369 of 549  vol = 3.067 
+ core size 368 of 549  vol = 3.002 
+ core size 367 of 549  vol = 2.917 
+ core size 366 of 549  vol = 2.848 
+ core size 365 of 549  vol = 2.777 
+ core size 364 of 549  vol = 2.717 
+ core size 363 of 549  vol = 2.648 
+ core size 362 of 549  vol = 2.597 
+ core size 361 of 549  vol = 2.548 
+ core size 360 of 549  vol = 2.498 
+ core size 359 of 549  vol = 2.447 
+ core size 358 of 549  vol = 2.403 
+ core size 357 of 549  vol = 2.358 
+ core size 356 of 549  vol = 2.314 
+ core size 355 of 549  vol = 2.262 
+ core size 354 of 549  vol = 2.217 
+ core size 353 of 549  vol = 2.174 
+ core size 352 of 549  vol = 2.13 
+ core size 351 of 549  vol = 2.081 
+ core size 350 of 549  vol = 2.042 
+ core size 349 of 549  vol = 2 
+ core size 348 of 549  vol = 1.96 
+ core size 347 of 549  vol = 1.924 
+ core size 346 of 549  vol = 1.887 
+ core size 345 of 549  vol = 1.848 
+ core size 344 of 549  vol = 1.813 
+ core size 343 of 549  vol = 1.778 
+ core size 342 of 549  vol = 1.74 
+ core size 341 of 549  vol = 1.705 
+ core size 340 of 549  vol = 1.674 
+ core size 339 of 549  vol = 1.638 
+ core size 338 of 549  vol = 1.604 
+ core size 337 of 549  vol = 1.572 
+ core size 336 of 549  vol = 1.543 
+ core size 335 of 549  vol = 1.517 
+ core size 334 of 549  vol = 1.487 
+ core size 333 of 549  vol = 1.46 
+ core size 332 of 549  vol = 1.434 
+ core size 331 of 549  vol = 1.411 
+ core size 330 of 549  vol = 1.385 
+ core size 329 of 549  vol = 1.362 
+ core size 328 of 549  vol = 1.342 
+ core size 327 of 549  vol = 1.322 
+ core size 326 of 549  vol = 1.301 
+ core size 325 of 549  vol = 1.277 
+ core size 324 of 549  vol = 1.259 
+ core size 323 of 549  vol = 1.24 
+ core size 322 of 549  vol = 1.219 
+ core size 321 of 549  vol = 1.2 
+ core size 320 of 549  vol = 1.181 
+ core size 319 of 549  vol = 1.159 
+ core size 318 of 549  vol = 1.138 
+ core size 317 of 549  vol = 1.119 
+ core size 316 of 549  vol = 1.102 
+ core size 315 of 549  vol = 1.084 
+ core size 314 of 549  vol = 1.065 
+ core size 313 of 549  vol = 1.045 
+ core size 312 of 549  vol = 1.026 
+ core size 311 of 549  vol = 1.007 
+ core size 310 of 549  vol = 0.989 
+ core size 309 of 549  vol = 0.973 
+ core size 308 of 549  vol = 0.953 
+ core size 307 of 549  vol = 0.935 
+ core size 306 of 549  vol = 0.921 
+ core size 305 of 549  vol = 0.906 
+ core size 304 of 549  vol = 0.892 
+ core size 303 of 549  vol = 0.88 
+ core size 302 of 549  vol = 0.866 
+ core size 301 of 549  vol = 0.85 
+ core size 300 of 549  vol = 0.835 
+ core size 299 of 549  vol = 0.82 
+ core size 298 of 549  vol = 0.805 
+ core size 297 of 549  vol = 0.792 
+ core size 296 of 549  vol = 0.776 
+ core size 295 of 549  vol = 0.764 
+ core size 294 of 549  vol = 0.751 
+ core size 293 of 549  vol = 0.739 
+ core size 292 of 549  vol = 0.726 
+ core size 291 of 549  vol = 0.715 
+ core size 290 of 549  vol = 0.702 
+ core size 289 of 549  vol = 0.691 
+ core size 288 of 549  vol = 0.676 
+ core size 287 of 549  vol = 0.663 
+ core size 286 of 549  vol = 0.653 
+ core size 285 of 549  vol = 0.64 
+ core size 284 of 549  vol = 0.63 
+ core size 283 of 549  vol = 0.619 
+ core size 282 of 549  vol = 0.607 
+ core size 281 of 549  vol = 0.597 
+ core size 280 of 549  vol = 0.585 
+ core size 279 of 549  vol = 0.573 
+ core size 278 of 549  vol = 0.562 
+ core size 277 of 549  vol = 0.55 
+ core size 276 of 549  vol = 0.541 
+ core size 275 of 549  vol = 0.531 
+ core size 274 of 549  vol = 0.519 
+ core size 273 of 549  vol = 0.508 
+ core size 272 of 549  vol = 0.497 
+ FINISHED: Min vol ( 0.5 ) reached</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>core.inds <span class="ot">&lt;-</span> <span class="fu">print</span>(core, <span class="at">vol=</span><span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># 273 positions (cumulative volume &lt;= 0.5 Angstrom^3) 
+   start end length
+1     35  35      1
+2     39  39      1
+3     43  43      1
+4     51  51      1
+5     56  70     15
+6     75  75      1
+7     77  87     11
+8     94  94      1
+9     97  98      2
+10   100 101      2
+11   104 126     23
+12   130 163     34
+13   167 336    170
+14   354 359      6
+15   421 424      4</code></pre>
+</div>
+</div>
+<p>Writing the superimposed coordinates to a new file for use in Mol*</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>xyz <span class="ot">&lt;-</span> <span class="fu">pdbfit</span>(pdbs, core.inds, <span class="at">outpath=</span><span class="st">"corefit_structures"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="hsp70_uncertainty.png" class="img-fluid figure-img"></p>
+<figcaption>Uncertainty/disorder of strucutres in Mol*</figcaption>
+</figure>
+</div>
+<p>I will now use RMSF to observe the conformational variance across the structure:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>rf <span class="ot">&lt;-</span> <span class="fu">rmsf</span>(xyz)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plotb3</span>(rf, <span class="at">sse=</span>pdb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in plotb3(rf, sse = pdb): Length of input 'sse' does not equal the
+length of input 'x'; Ignoring 'sse'</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v=</span><span class="dv">100</span>, <span class="at">col=</span><span class="st">"gray"</span>, <span class="at">ylab=</span><span class="st">"RMSF"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="class11_HW_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>Note: I am unsure why the sse function is not working using an existing HSP70 PDB file as my reference protein :(</p>
+</blockquote>
+</section>
+<section id="predicted-alignment-error-for-domains" class="level2">
+<h2 class="anchored" data-anchor-id="predicted-alignment-error-for-domains">Predicted Alignment Error for Domains</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(jsonlite)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'jsonlite' was built under R version 4.3.3</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>pae_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">path=</span>results_dir,</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">pattern=</span><span class="st">".*model.*</span><span class="sc">\\</span><span class="st">.json"</span>,</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>pae1 <span class="ot">&lt;-</span> <span class="fu">read_json</span>(pae_files[<span class="dv">1</span>],<span class="at">simplifyVector =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>pae2 <span class="ot">&lt;-</span> <span class="fu">read_json</span>(pae_files[<span class="dv">2</span>],<span class="at">simplifyVector =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>pae3 <span class="ot">&lt;-</span> <span class="fu">read_json</span>(pae_files[<span class="dv">3</span>],<span class="at">simplifyVector =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>pae4 <span class="ot">&lt;-</span> <span class="fu">read_json</span>(pae_files[<span class="dv">4</span>],<span class="at">simplifyVector =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>pae5 <span class="ot">&lt;-</span> <span class="fu">read_json</span>(pae_files[<span class="dv">5</span>],<span class="at">simplifyVector =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="fu">attributes</span>(pae1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$names
+[1] "plddt"   "max_pae" "pae"     "ptm"    </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(pae1<span class="sc">$</span>plddt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 54.72 58.44 64.50 71.56 77.12 84.31</code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>Which model has the best (lowest) max PAE?</p>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>pae1<span class="sc">$</span>max_pae</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 30.375</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>pae2<span class="sc">$</span>max_pae</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 29.6875</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>pae3<span class="sc">$</span>max_pae</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 30.46875</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>pae4<span class="sc">$</span>max_pae</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 30.75</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>pae5<span class="sc">$</span>max_pae</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 30.67188</code></pre>
+</div>
+</div>
+<p>PAE 2 is lowest in this case!</p>
+<p>I will plot each of these PAE in the same range:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot.dmat</span>(pae1<span class="sc">$</span>pae, </span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">xlab=</span><span class="st">"Residue Position (i)"</span>,</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">ylab=</span><span class="st">"Residue Position (j)"</span>,</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">grid.col =</span> <span class="st">"black"</span>,</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">zlim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">30</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="class11_HW_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot.dmat</span>(pae2<span class="sc">$</span>pae, </span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">xlab=</span><span class="st">"Residue Position (i)"</span>,</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">ylab=</span><span class="st">"Residue Position (j)"</span>,</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">grid.col =</span> <span class="st">"black"</span>,</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">zlim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">30</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="class11_HW_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot.dmat</span>(pae3<span class="sc">$</span>pae, </span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">xlab=</span><span class="st">"Residue Position (i)"</span>,</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">ylab=</span><span class="st">"Residue Position (j)"</span>,</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">grid.col =</span> <span class="st">"black"</span>,</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">zlim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">30</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="class11_HW_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot.dmat</span>(pae4<span class="sc">$</span>pae, </span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">xlab=</span><span class="st">"Residue Position (i)"</span>,</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">ylab=</span><span class="st">"Residue Position (j)"</span>,</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">grid.col =</span> <span class="st">"black"</span>,</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">zlim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">30</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="class11_HW_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot.dmat</span>(pae5<span class="sc">$</span>pae, </span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">xlab=</span><span class="st">"Residue Position (i)"</span>,</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">ylab=</span><span class="st">"Residue Position (j)"</span>,</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">grid.col =</span> <span class="st">"black"</span>,</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">zlim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">30</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="class11_HW_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="residue-conservation-from-alignment-file" class="level2">
+<h2 class="anchored" data-anchor-id="residue-conservation-from-alignment-file">Residue Conservation from Alignment File</h2>
+<p>Generate alignment file:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>aln_file <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">path=</span>results_dir,</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>                       <span class="at">pattern=</span><span class="st">".a3m$"</span>,</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>aln_file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "hsp70_sardinops_b602d/hsp70_sardinops_b602d.a3m"</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>aln <span class="ot">&lt;-</span> <span class="fu">read.fasta</span>(aln_file[<span class="dv">1</span>], <span class="at">to.upper =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] " ** Duplicated sequence id's: 101 **"</code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>How many sequences in this alignment?</p>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(aln<span class="sc">$</span>ali)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 33473   994</code></pre>
+</div>
+</div>
+<p>I will score residue conservation using the <code>conserv()</code> function:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>sim <span class="ot">&lt;-</span> <span class="fu">conserv</span>(aln)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plotb3</span>(sim[<span class="dv">1</span><span class="sc">:</span><span class="dv">99</span>], <span class="at">sse=</span><span class="fu">trim.pdb</span>(pdb, <span class="at">chain=</span><span class="st">"A"</span>),</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">ylab=</span><span class="st">"Conservation Score"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in plotb3(sim[1:99], sse = trim.pdb(pdb, chain = "A"), ylab =
+"Conservation Score"): Length of input 'sse' does not equal the length of input
+'x'; Ignoring 'sse'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="class11_HW_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Let’s look at the sequences which will stand out in a consensus sequence</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Commenting out to speed up html generation</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="co">#con &lt;- consensus(aln, cutoff = 0.7)</span></span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a><span class="co">#con$seq</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>m1.pdb <span class="ot">&lt;-</span> <span class="fu">read.pdb</span>(pdb_files[<span class="dv">1</span>])</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>occ <span class="ot">&lt;-</span> <span class="fu">vec2resno</span>(<span class="fu">rep</span>(sim[<span class="dv">1</span><span class="sc">:</span><span class="dv">99</span>], <span class="at">length.out=</span><span class="dv">549</span>), m1.pdb<span class="sc">$</span>atom<span class="sc">$</span>resno)</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a><span class="fu">write.pdb</span>(m1.pdb, <span class="at">o=</span>occ, <span class="at">file=</span><span class="st">"m1_conserv.pdb"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>There are not many colors present in the following representation by occupancy:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="M1_CONSERV_occupancy.png" class="img-fluid figure-img"></p>
+<figcaption>Color by Occupancy in Mol*</figcaption>
+</figure>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
