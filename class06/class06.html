@@ -72,10 +72,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </head>
 
-<body class="fullcontent">
+<body>
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="class06.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
@@ -141,16 +142,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Let’s write a function that generates random nucleotide sequences!</p>
 <p>We can use the built-in <code>sample()</code> function to achieve this.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#This function randomly picks numbers between 1 and 10 without repeating any values (default replace=FALSE)</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(<span class="at">x=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="at">size=</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#This function randomly picks numbers between 1 and 10 without repeating any values</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co">#(default replace=FALSE)</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(<span class="at">x=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="at">size=</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 10  8  2  1  3</code></pre>
+<pre><code>[1]  9 10  1  7  6</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(<span class="at">x=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="at">size=</span><span class="dv">11</span>, <span class="at">replace=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1]  9  6  9  1  5 10  3  6  6  3 10</code></pre>
+<pre><code> [1] 10  2  4  7  1  4  7  7  6 10  3</code></pre>
 </div>
 </div>
 <blockquote class="blockquote">
@@ -159,7 +161,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(<span class="at">x=</span><span class="fu">c</span>(<span class="st">"A"</span>,<span class="st">"T"</span>,<span class="st">"C"</span>,<span class="st">"G"</span>), <span class="at">size=</span><span class="dv">5</span>, <span class="at">replace=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "C" "G" "A" "C" "A"</code></pre>
+<pre><code>[1] "A" "A" "C" "T" "T"</code></pre>
 </div>
 </div>
 <blockquote class="blockquote">
@@ -179,7 +181,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_dna</span>(<span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] "T" "C" "T" "G" "G" "A" "T" "A" "A" "A" "G" "A" "C" "G" "A"</code></pre>
+<pre><code> [1] "C" "A" "C" "C" "C" "A" "C" "A" "T" "A" "A" "T" "A" "C" "T"</code></pre>
 </div>
 </div>
 <blockquote class="blockquote">
@@ -196,7 +198,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_protein</span>(<span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "Y" "V" "L" "A" "K" "I"</code></pre>
+<pre><code>[1] "C" "D" "N" "I" "P" "W"</code></pre>
 </div>
 </div>
 <p>I want my output of this function to have no quotes, and rather be a continuous string as opposed to individual elements</p>
@@ -215,7 +217,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="fu">generate_protein</span>(<span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "DYYMGQ"</code></pre>
+<pre><code>[1] "SKDISY"</code></pre>
 </div>
 </div>
 <blockquote class="blockquote">
@@ -226,8 +228,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>ans <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="at">X=</span><span class="fu">c</span>(<span class="dv">6</span><span class="sc">:</span><span class="dv">12</span>), <span class="at">FUN =</span> generate_protein)</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>ans</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "WTHPDM"       "QTNYMGW"      "ASKPYHMK"     "NAHYGNWIP"    "IDMLFNCKGM"  
-[6] "VKDSHNCVYGP"  "DNNAWRCITGYL"</code></pre>
+<pre><code>[1] "ANKLWI"       "CYPFMRL"      "VCRCSVAA"     "ITEADYNVM"    "FRTYEMEQSM"  
+[6] "KGKHMKKSLPF"  "FTEFIIMCWCPK"</code></pre>
 </div>
 </div>
 <p>Let us now format these sequences in fasta format such that they could be used in BLAST.</p>
@@ -235,19 +237,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> (<span class="fu">paste</span>(<span class="st">"&gt;ID_"</span>,<span class="dv">6</span><span class="sc">:</span><span class="dv">12</span>,<span class="at">sep=</span><span class="st">""</span>,<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>,ans, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>&gt;ID_6
-WTHPDM
+ANKLWI
  &gt;ID_7
-QTNYMGW
+CYPFMRL
  &gt;ID_8
-ASKPYHMK
+VCRCSVAA
  &gt;ID_9
-NAHYGNWIP
+ITEADYNVM
  &gt;ID_10
-IDMLFNCKGM
+FRTYEMEQSM
  &gt;ID_11
-VKDSHNCVYGP
+KGKHMKKSLPF
  &gt;ID_12
-DNNAWRCITGYL</code></pre>
+FTEFIIMCWCPK</code></pre>
 </div>
 </div>
 <blockquote class="blockquote">
